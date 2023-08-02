@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regex</title>
+    <script src="https://unpkg.com/lodash@4.17.21/lodash.min.js"></script>
+    <script src="https://unpkg.com/petite-vue"></script>
+    <script>
+        function togglecheatsheet(){
+            cheatsheet = document.querySelector("#cheatsheet .content");
+            if (cheatsheet.style.visibility == "visible") {
+                cheatsheet.style.visibility = "hidden";
+            } else { // "hidden" or undefined
+                cheatsheet.style.visibility = "visible";
+            }
+        }
+    </script>
+    <script>
+        function regex_matches(regex,input,regex_flags){
+          try {
+                query = new RegExp(regex,regex_flags);
+            } catch(error) {
+                console.log("invalid regexp: "+query);
+            }
+            
+            return input.matchAll(query);
+        }
+        function marked(regex,input,regex_flags){
+            const matches = regex_matches(regex,input,regex_flags);
+            let output = "";
+            let cur = 0;
+            console.log(JSON.stringify(input));
+            for (const match of matches) {
+                output += input.slice(cur,match.index) + `<span class ="matched">${match[0]}</span>`;
+                cur = match.index + match[0].length;
+                //console.log( `Found ${match[0]} start=${match.index} end=${match.index + match[0].length}.`,);
+            }
+            if (cur < input.length) {
+                output += input.slice(cur);
+            }
+            //output = output.replaceAll("\n","<br/>");
+            return output;
+        }
+        function matches(regex,input,regex_flags){
+            const matches = regex_matches(regex,input,regex_flags);
+            let output = "<ul>";
+            for (const match of matches) {
+                let matchArr = [...match];
+                console.log(matchArr,matchArr.length);
+                output += `<li class ="matched">${matchArr[0]}`;
+               /*  if (matchArr.length  > 1){
+                  output += "<ol>";
+                  for (let i = 1; i++; i<matchArr.length){
+                    if (matchArr[i] == undefined){console.log(matchArr[i]);break;}
+                    output += `<li class ="matched">${matchArr[i]}</li>`
+                  }
+                  output += "</ol>";
+                } */
+                output += "</li>";
+            }
+            output += "</ul";
+            return output;
+        }
+    </script>
+    <script type="module">
+        PetiteVue.createApp(
+        {
+            query: 'fo+\\S+',
+            input: 'table football, foosball', 
+            regex_flags: "g",
+            get getmarked() {
+                return marked(this.query,this.input,this.regex_flags)
+            },
+            get getmatches() {
+                return matches(this.query,this.input,this.regex_flags)
+            },
+            update_query: _.debounce(function (e) {
+                this.query = e.target.value
+            }, 100),
+            update_input: _.debounce(function (e) {
+                this.input = e.target.value
+            }, 100)
+        }).mount('#editor')
+    </script>
+    <style>
+        html,
+        body,
+        #editor {
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            margin: 0;
+            /*height: 100%;*/
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #333;
+        }
+        :is(h1,h2,h3) {
+            margin: 0;
+            text-align: center;
+        }
+        #cheatsheet{
+            max-width: 900px;
+            font-size: medium;
+            display: flex;
+            flex-direction: column;
+        }
+        #cheatsheet .header{
+            background-color: lightgray;
+            text-align: center;
+            font-weight: bold;
+        }
+        #cheatsheet .content{
+            visibility: hidden;
+            display: grid;
+            margin: 1rem;
+            gap: 1rem;
+            grid-template-columns: 1fr 1fr;
+        }
+        #cheatsheet .content table{
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            outline: none;
+            width: 100%;
+            /*color: #ededed;*/
+            padding: 8px;
+        }
+        #cheatsheet .content td{
+            font-size: small;
+        }
+
+        #cheatsheet .content td code {
+            padding: 1px 5px 1px 5px;
+            background-color: #eeeeee;
+            color: black;
+            font-weight: 400;
+        }
+
+        
+        #editor {
+            margin: 1rem auto;
+            display: flex;
+            flex-direction: column;
+            max-width: 900px;
+            gap: 1em;
+        }
+        .content{
+            display: flex;
+            flex-shrink: 0;
+            flex-grow: 0;
+            min-height:400px;
+        }
+        .input,
+        .output {
+            width: 50%;
+            border: none;
+            box-sizing: border-box;
+        }
+        .query {
+            justify-self: center;
+            border-bottom: 1px solid #ccc;
+            resize: vertical;
+            width: 90%;
+            text-align: center;
+            font-size: x-large;
+        }
+        .query > *{
+            font-size: medium;
+            padding: .5rem;
+            width: 90%;
+            border-color: rgba(0, 0, 0, 20%);
+            margin: .4rem;
+        }
+        .input {
+            width: 50%;
+            border: none;
+            border-right: 1px solid #ccc;
+            resize: vertical;
+            outline: none;
+            background-color: #f6f6f6;
+            font-size: 14px;
+            font-family: 'Monaco', courier, monospace;
+            padding: 20px;
+        }
+
+        .output {
+            width: 50%;
+            padding: 0 20px;
+            background-color: white;
+            white-space: pre;
+            
+            overflow: scroll;
+        }
+        .output .matched{
+            background-color: #52d452;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div id="editor">
+        <h1>Regex Static</h1>
+        <div class="label">Your regular expression:</div>
+        <div class="query">
+            /<input :value="query" @input="update_query" ></textarea>/
+        </div>
+        <!--<div class="flags">
+            <i	Ignore Casing	Makes the expression search case-insensitively.
+g	Global	Makes the expression search for all occurrences.
+s	Dot All	Makes the wild character . match newlines as well.
+m	Multiline	Makes the boundary characters ^ and $ match the beginning and ending of every single line instead of the beginning and ending of the whole string.
+y	Sticky	Makes the expression start its searching from the index indicated in its lastIndex property.
+u	Unicode
+        </div>-->
+        <div class="content">
+            <div class="label">Your test string:</div><textarea class="input" :value="input" @input="update_input"></textarea>
+            <div class="label">Match result:</div><div class="output" v-html="getmarked"></div>
+            <div class="label">Match captures:</div><div class="matches" v-html="getmatches"></div>
+        </div>
+        <div id="cheatsheet">
+            <div class="header" onclick="togglecheatsheet()">
+              Regular expression cheatsheet
+            </div>
+            <div class="content" >
+              <div>
+              <h3>Special characters</h3>
+              <div class="round">
+                <table>
+                  <tbody><tr>
+                    <td class="key_td"><code>\</code></td>
+                    <td>escape special characters</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>.</code></td>
+                    <td>matches any character</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>^</code></td>
+                    <td>matches beginning of string</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>$</code></td>
+                    <td>matches end of string</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>[5b-d]</code></td>
+                    <td>matches any chars '5', 'b', 'c' or 'd'</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>[^a-c6]</code></td>
+                    <td>matches any char except 'a', 'b', 'c' or '6'</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>R|S</code></td>
+                    <td>matches either regex <code>R</code> or regex <code>S</code></td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>()</code></td>
+                    <td>creates a capture group and indicates precedence</td>
+                  </tr>
+                </tbody></table>
+              </div>
+              </div>
+              <div>
+              <h3>Quantifiers</h3>
+              <div class="round">
+                <table>
+                  <tbody><tr>
+                    <td class="key_td"><code>*</code></td>
+                    <td>0 or more (append <code>?</code> for non-greedy)</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>+</code></td>
+                    <td>1 or more (append <code>?</code> for non-greedy)</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>?</code></td>
+                    <td>0 or 1 (append <code>?</code> for non-greedy)</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>{m}</code></td>
+                    <td>exactly <code>m</code>m occurrences</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>{m, n}</code></td>
+                    <td>from <code>m</code> to <code>n</code>. <code>m</code> defaults to 0, <code>n</code> to infinity</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>{m, n}?</code></td>
+                    <td>from <code>m</code> to <code>n</code>, as few as possible</td>
+                  </tr>
+                </tbody></table>
+              </div>
+              </div>
+              <div>
+              <h3>Special sequences</h3>
+              <div class="round">
+                <table>
+                  <tbody><tr>
+                    <td class="key_td"><code>\A</code></td>
+                    <td>start of string</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>\b</code></td>
+                    <td>matches empty string at word boundary (between <code>\w</code> and <code>\W</code>)</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>\B</code></td>
+                    <td>matches empty string not at word boundary</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>\d</code></td>
+                    <td>digit</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>\D</code></td>
+                    <td>non-digit</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>\s</code></td>
+                    <td>whitespace: <code>[ \t\n\r\f\v]</code></td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>\S</code></td>
+                    <td>non-whitespace</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>\w</code></td>
+                    <td>alphanumeric: <code>[0-9a-zA-Z_]</code></td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>\W</code></td>
+                    <td>non-alphanumeric</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>\Z</code></td>
+                    <td>end of string</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>\g&lt;id&gt;</code></td>
+                    <td>matches a previously defined group</td>
+                  </tr>
+                </tbody></table>
+              </div>
+              </div>
+              <div>
+              <h3>Special sequences</h3>
+              <div class="round">
+                <table>
+                  <tbody><tr>
+                    <td class="key_td"><code>(?iLmsux)</code></td>
+                    <td>matches empty string, sets re.X flags</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>(?:...)</code></td>
+                    <td>non-capturing version of regular parentheses</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>(?P<name>...)</name></code></td>
+                    <td>matches whatever matched previously named group</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>(?P=<name>)</name></code></td>
+                    <td>digit</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>(?#...)</code></td>
+                    <td>a comment; ignored</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>(?=...)</code></td>
+                    <td>lookahead assertion: matches without consuming</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>(?!...)</code></td>
+                    <td>negative lookahead assertion</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>(?&lt;=...)</code></td>
+                    <td>lookbehind assertion: matches if preceded</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>(?&lt;!...)</code></td>
+                    <td>negative lookbehind assertion</td>
+                  </tr>
+                  <tr>
+                    <td class="key_td"><code>(?(id)yes|no)</code></td>
+                    <td>match 'yes' if group 'id' matched, else 'no'</td>
+                  </tr>
+                </tbody></table>
+              </div>
+              </div>
+              <!--<div id="python-regex-cheatsheet-credit">
+                Based on tartley's <a href="https://github.com/tartley/python-regex-cheatsheet/">python-regex-cheatsheet</a>.
+              </div>-->
+            </div>
+          </div>
+    </div>
+    
+</body>
+
+</html>
