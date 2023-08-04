@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Regex</title>
+
+  <script src="https://unpkg.com/lodash@4.17.21/lodash.min.js"></script>
+  <script src="https://unpkg.com/petite-vue"></script>
+  <script src="regex-petite-vue.js"></script>
+  <script>
+    function togglecheatsheet() {
+      cheatsheet = document.querySelector("#cheatsheet .content");
+      if (cheatsheet.style.visibility == "visible") {
+        cheatsheet.style.visibility = "hidden";
+      } else { // "hidden" or undefined
+        cheatsheet.style.visibility = "visible";
+      }
+    }
+  </script>
+  <script type="module">
+    PetiteVue.createApp(
+      {
+        query: 'fo+\\S+',
+        input: 'table football, foosball',
+        regex_flags: "g",
+        get getmarked() {
+          return marked(this.query, this.input, this.regex_flags);
+        },
+        get getmatches() {
+          return matches(this.query, this.input, this.regex_flags);
+        },
+        update_query: _.debounce(function (e) {
+          this.query = e.target.value
+        }, 100),
+        update_input: _.debounce(function (e) {
+          this.input = e.target.value
+        }, 100),
+
+      }).mount('#editor');
+  </script>
+  <script type="module" src="regex-petite-vue.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div id="editor">
+    <h1>Regex Static</h1>
+    <div class="label">Your regular expression:</div>
+    <div class="query">
+      /<input :value="query" @input="update_query"></textarea>/
+    </div>
+    <!--<div class="flags">
+            <i	Ignore Casing	Makes the expression search case-insensitively.
+g	Global	Makes the expression search for all occurrences.
+s	Dot All	Makes the wild character . match newlines as well.
+m	Multiline	Makes the boundary characters ^ and $ match the beginning and ending of every single line instead of the beginning and ending of the whole string.
+y	Sticky	Makes the expression start its searching from the index indicated in its lastIndex property.
+u	Unicode
+        </div>-->
+    <div class="content">
+      <div class="label">Your test string:</div>
+      <textarea class="input" :value="input" @input="update_input"></textarea>
+
+      <div class="output">
+        <div>
+          <div class="label">Match result:</div>
+          <div class="marked" v-html="getmarked"></div>
+        </div>
+        <div>
+          <div class="label">Match captures: <a id="download" type="text/csv">Download CSV</a></div>
+          <div class="matches" v-html="getmatches"></div>
+        </div>
+      </div>
+    </div>
+    <div id="cheatsheet">
+      <div class="header" onclick="togglecheatsheet()">
+        Regular expression cheatsheet
+      </div>
+      <div class="content">
+        <div>
+          <h3>Special characters</h3>
+          <div class="round">
+            <table>
+              <tbody>
+                <tr>
+                  <th><code>\</code></th>
+                  <td>escape special characters</td>
+                </tr>
+                <tr>
+                  <th><code>.</code></th>
+                  <td>matches any character</td>
+                </tr>
+                <tr>
+                  <th><code>^</code></th>
+                  <td>matches beginning of string</td>
+                </tr>
+                <tr>
+                  <th><code>$</code></th>
+                  <td>matches end of string</td>
+                </tr>
+                <tr>
+                  <th><code>[5b-d]</code></th>
+                  <td>matches any chars '5', 'b', 'c' or 'd'</td>
+                </tr>
+                <tr>
+                  <th><code>[^a-c6]</code></th>
+                  <td>matches any char except 'a', 'b', 'c' or '6'</td>
+                </tr>
+                <tr>
+                  <th><code>R|S</code></th>
+                  <td>matches either regex <code>R</code> or regex <code>S</code></th>
+                </tr>
+                <tr>
+                  <th><code>()</code></th>
+                  <td>creates a capture group and indicates precedence</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <h3>Quantifiers</h3>
+          <div class="round">
+            <table>
+              <tbody>
+                <tr>
+                  <th><code>*</code></th>
+                  <td>0 or more (append <code>?</code> for non-greedy)</td>
+                </tr>
+                <tr>
+                  <th><code>+</code></th>
+                  <td>1 or more (append <code>?</code> for non-greedy)</td>
+                </tr>
+                <tr>
+                  <th><code>?</code></th>
+                  <td>0 or 1 (append <code>?</code> for non-greedy)</td>
+                </tr>
+                <tr>
+                  <th><code>{m}</code></th>
+                  <td>exactly <code>m</code>m occurrences</td>
+                </tr>
+                <tr>
+                  <th><code>{m, n}</code></th>
+                  <td>from <code>m</code> to <code>n</code>. <code>m</code> defaults to 0, <code>n</code> to infinity
+                  </td>
+                </tr>
+                <tr>
+                  <th><code>{m, n}?</code></th>
+                  <td>from <code>m</code> to <code>n</code>, as few as possible</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <h3>Special sequences</h3>
+          <div class="round">
+            <table>
+              <tbody>
+                <tr>
+                  <th><code>\A</code></th>
+                  <td>start of string</td>
+                </tr>
+                <tr>
+                  <th><code>\b</code></th>
+                  <td>matches empty string at word boundary (between <code>\w</code> and <code>\W</code>)</td>
+                </tr>
+                <tr>
+                  <th><code>\B</code></th>
+                  <td>matches empty string not at word boundary</td>
+                </tr>
+                <tr>
+                  <th><code>\d</code></th>
+                  <td>digit</td>
+                </tr>
+                <tr>
+                  <th><code>\D</code></th>
+                  <td>non-digit</td>
+                </tr>
+                <tr>
+                  <th><code>\s</code></th>
+                  <td>whitespace: <code>[ \t\n\r\f\v]</code></th>
+                </tr>
+                <tr>
+                  <th><code>\S</code></th>
+                  <td>non-whitespace</td>
+                </tr>
+                <tr>
+                  <th><code>\w</code></th>
+                  <td>alphanumeric: <code>[0-9a-zA-Z_]</code></th>
+                </tr>
+                <tr>
+                  <th><code>\W</code></th>
+                  <td>non-alphanumeric</td>
+                </tr>
+                <tr>
+                  <th><code>\Z</code></th>
+                  <td>end of string</td>
+                </tr>
+                <tr>
+                  <th><code>\g&lt;id&gt;</code></th>
+                  <td>matches a previously defined group</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <h3>Special sequences</h3>
+          <div class="round">
+            <table>
+              <tbody>
+                <tr>
+                  <th><code>(?iLmsux)</code></th>
+                  <td>matches empty string, sets re.X flags</td>
+                </tr>
+                <tr>
+                  <th><code>(?:...)</code></th>
+                  <td>non-capturing version of regular parentheses</td>
+                </tr>
+                <tr>
+                  <th><code>(?P<name>...)</name></code></th>
+                  <td>matches whatever matched previously named group</td>
+                </tr>
+                <tr>
+                  <th><code>(?P=<name>)</name></code></th>
+                  <td>digit</td>
+                </tr>
+                <tr>
+                  <th><code>(?#...)</code></th>
+                  <td>a comment; ignored</td>
+                </tr>
+                <tr>
+                  <th><code>(?=...)</code></th>
+                  <td>lookahead assertion: matches without consuming</td>
+                </tr>
+                <tr>
+                  <th><code>(?!...)</code></th>
+                  <td>negative lookahead assertion</td>
+                </tr>
+                <tr>
+                  <th><code>(?&lt;=...)</code></th>
+                  <td>lookbehind assertion: matches if preceded</td>
+                </tr>
+                <tr>
+                  <th><code>(?&lt;!...)</code></th>
+                  <td>negative lookbehind assertion</td>
+                </tr>
+                <tr>
+                  <th><code>(?(id)yes|no)</code></th>
+                  <td>match 'yes' if group 'id' matched, else 'no'</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!--<div id="python-regex-cheatsheet-credit">
+                Based on tartley's <a href="https://github.com/tartley/python-regex-cheatsheet/">python-regex-cheatsheet</a>.
+              </div>-->
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>
