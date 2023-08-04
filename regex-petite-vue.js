@@ -25,7 +25,7 @@ function marked(regex, input, regex_flags) {
 }
 function add_dowload_data(matches, download_id) {
   var csv = "";
-  console.log(matches);
+  //console.log(matches);
   for (match of matches) {
     csv += match[0] + "\n";
   }
