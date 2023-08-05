@@ -10,7 +10,6 @@ function marked(regex, input, regex_flags) {
   const matches = regex_matches(regex, input, regex_flags);
   let output = "";
   let cur = 0;
-  //console.log(JSON.stringify(input));
   if (matches == undefined) return;
   for (const match of matches) {
     output += input.slice(cur, match.index) + `<mark>${match[0]}</mark>`;
@@ -20,20 +19,19 @@ function marked(regex, input, regex_flags) {
   if (cur < input.length) {
     output += input.slice(cur);
   }
-  //output = output.replaceAll("\n","<br/>");
   return output;
 }
 function add_dowload_data(matches, download_id) {
   var csv = "";
+  var link = document.getElementById(download_id);
   //console.log(matches);
   for (match of matches) {
     csv += match[0] + "\n";
   }
   console.log(csv);
-  data = new Blob([csv]); // create a blob object
-  var url = URL.createObjectURL(data); // create a data URL from the blob
-  var link = document.getElementById(download_id); // get the link element
-  if (link != undefined) link.href = url; // set the href attribute to the data URL
+  data = new Blob([csv]);
+  var url = URL.createObjectURL(data);
+  if (link != undefined) link.href = url;
 }
 function matches(regex, input, regex_flags) {
   const matches = regex_matches(regex, input, regex_flags);
@@ -41,7 +39,7 @@ function matches(regex, input, regex_flags) {
   if (matches == undefined) return; 
   for (const match of matches) {
     let matchArr = [...match];
-    //console.log(matchArr, matchArr.length);
+    console.log(matchArr, matchArr.length);
     output += `<li class ="matched">${matchArr[0]}`;
     /*  if (matchArr.length  > 1){
             output += "<ol>";
